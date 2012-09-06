@@ -11,6 +11,7 @@
 #include <vcl_cassert.h>
 #include <vcl_compiler.h>
 #include <vil/vil_image_view.h>
+#include <vil/vil_image_resource.h>
 #include <vil/vil_view_as.h>
 #include <vil/vil_plane.h>
 #include <vil/vil_transform.h>
@@ -305,6 +306,42 @@ inline void vil_math_sum_squares(sumT& sum, sumT& sum_sq, const vil_image_view<i
   }
 }
 
+//: Sum of squares of masked elements in plane p of image
+// \relatesalso vil_image_view
+template<class imT, class sumT>
+inline bool vil_math_sum_squares(sumT& sum, sumT& sum_sq, unsigned int & count,
+                                 const vil_image_view<imT>& im, const vil_image_view<bool> & mask, unsigned p)
+{
+  count = 0;
+  if ( im.ni() != mask.ni() || im.nj() != mask.nj() || mask.nplanes() != 1)
+  {
+    return false;
+  }
+  const imT* row = im.top_left_ptr()+p*im.planestep();
+  vcl_ptrdiff_t istep = im.istep(),jstep=im.jstep();
+  const imT* row_end = row + im.nj()*jstep;
+  vcl_ptrdiff_t row_len = im.ni()*im.istep();
+  const bool* m_row = mask.top_left_ptr()+mask.planestep();
+  vcl_ptrdiff_t m_istep = mask.istep(), m_jstep=mask.jstep();
+  sum = 0; sum_sq = 0;
+  for (;row!=row_end;row+=jstep, m_row+=m_jstep)
+  {
+    const imT* v_end = row + row_len;
+    const bool* b = m_row;
+    for (const imT* v = row; v!=v_end;v+=istep, b+=m_istep )
+    {
+      if(*b)
+      {
+        ++count;
+        sum+=*v;
+        sum_sq+=sumT(*v)*sumT(*v);
+      }
+    }
+  }
+  return true;
+}
+
+
 //: Mean and variance of elements in plane p of image
 // \relatesalso vil_image_view
 template<class imT, class sumT>
@@ -316,6 +353,59 @@ inline void vil_math_mean_and_variance(sumT& mean, sumT& var, const vil_image_vi
   mean = sum/float(im.ni()*im.nj());
   var = sum_sq/float(im.ni()*im.nj()) - mean*mean;
 }
+
+//: Mean and variance of masked elements in plane p of image
+// \relatesalso vil_image_view
+template<class imT, class sumT>
+inline bool vil_math_mean_and_variance(sumT& mean, sumT& var, const vil_image_view<imT>& im,
+                                       const vil_image_view<bool> & mask, unsigned p)
+{
+  if (im.size()==0) { mean=0; var=0; return true; }
+  sumT sum,sum_sq;
+  unsigned int count = 0;
+  if(!vil_math_sum_squares(sum,sum_sq, count, im,mask,p))
+  {
+    return false;
+  }
+  mean = sum/float(count);
+  var = sum_sq/float(count) - mean*mean;
+  return true;
+}
+
+//: Mean and variance of masked elements in plane p for vil_image_resource
+// \relatedalso vil_image_resource
+template< class sumT >
+inline bool vil_math_mean_and_variance(sumT& mean, sumT& var, const vil_image_resource_sptr im,
+                                       const vil_image_view<bool> & mask, unsigned p)
+{
+  if(im == NULL || im->get_view() == NULL)
+  {
+    return false;
+  }
+  switch (im->pixel_format())
+  {
+    #define macro( F , T ) \
+    case F : \
+      return vil_math_mean_and_variance(mean, var, \
+                                        static_cast<vil_image_view<T >&>(*(im->get_view())), \
+                                        mask, p); \
+
+      macro(VIL_PIXEL_FORMAT_BYTE , vxl_byte )
+      macro(VIL_PIXEL_FORMAT_SBYTE , vxl_sbyte )
+      macro(VIL_PIXEL_FORMAT_UINT_32 , vxl_uint_32 )
+      macro(VIL_PIXEL_FORMAT_UINT_16 , vxl_uint_16 )
+      macro(VIL_PIXEL_FORMAT_INT_32 , vxl_int_32 )
+      macro(VIL_PIXEL_FORMAT_INT_16 , vxl_int_16 )
+      macro(VIL_PIXEL_FORMAT_BOOL , bool )
+      macro(VIL_PIXEL_FORMAT_FLOAT , float )
+      macro(VIL_PIXEL_FORMAT_DOUBLE , double )
+    #undef macro
+    default:
+      return false;
+  }
+  return true;
+}
+
 
 //: Functor class to compute square roots (returns zero if x<0)
 class vil_math_sqrt_functor
@@ -881,7 +971,7 @@ inline void vil_math_image_abs_difference(const vil_image_view<aT>& imA,
     for (unsigned j = 0; j < nj; ++j, rowA += jsA, rowB += jsB, rowD += jsD)
     {
       vil_math_image_abs_difference_1d<aT,bT,dT>(
-        rowA, isA, rowB, isB, rowD, isD, ni);
+        rowA, isA, rowB, isB, rowD, isB, ni);
     }
   }
 }
