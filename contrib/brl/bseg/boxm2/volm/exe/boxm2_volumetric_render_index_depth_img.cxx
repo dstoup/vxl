@@ -335,6 +335,10 @@ int main(int argc, char** argv)
         vil_save(dst_gt_img, (dst_gt_img_fname.str()).c_str());
         vil_save(ori_gt_img, (ori_gt_img_fname.str()).c_str());
         vil_save(lnd_gt_img, (lnd_gt_img_fname.str()).c_str());
+        if (gt_cam_ang_ptr)
+        {
+          delete gt_cam_ang_ptr;
+        }
       }
     }
   }
