@@ -39,7 +39,7 @@ read( char const* fn )
 #undef READ_THIS_TRANSFORMATION
 #define READ_THIS_TRANSFORMATION(tag, trans) \
   if ( tag_str.find(tag) == 0 ){    \
-    trans* trans_ptr = new trans(); \
+    rgrl_transformation_sptr trans_ptr = new trans(); \
     if( trans_ptr->read(is) )       \
       return trans_ptr;             \
     else                            \
