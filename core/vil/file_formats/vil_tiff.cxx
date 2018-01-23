@@ -199,7 +199,10 @@ vil_image_resource_sptr vil_tiff_file_format::make_input_image(vil_stream* is)
   tss->tif = open_tiff(tss, "rC");
 
   if (!tss->tif)
+  {
+    delete tss;
     return VXL_NULLPTR;
+  }
   vil_tiff_header* h = new vil_tiff_header(tss->tif);
 
   if (!h->format_supported)
@@ -210,10 +213,12 @@ vil_image_resource_sptr vil_tiff_file_format::make_input_image(vil_stream* is)
     TIFFClose(tss->tif);
 #endif // HAS_GEOTIFF
     delete h;
+    delete tss;
     return VXL_NULLPTR;
   }
   unsigned n = nimg(tss->tif);
   tif_smart_ptr tif_sptr = new tif_ref_cnt(tss->tif);
+
   return new vil_tiff_image(tif_sptr, h, n);
 }
 
@@ -321,7 +326,10 @@ vil_tiff_file_format::make_blocked_output_image(vil_stream* vs,
     mode += '8';   // enable bigtiff
   tss->tif = open_tiff(tss, mode.c_str());
   if (!tss->tif)
+  {
+    delete tss;
     return VXL_NULLPTR;
+  }
 
   //size_block_i==0 && size_block_j==0 specifies strips of one scanline
   //this constructor for h defines that the resource is to
@@ -335,10 +343,12 @@ vil_tiff_file_format::make_blocked_output_image(vil_stream* vs,
 #else
     TIFFClose(tss->tif);
 #endif // HAS_GEOTIFF
+    delete tss;
     delete h;
     return VXL_NULLPTR;
   }
   tif_smart_ptr tsptr = new tif_ref_cnt(tss->tif);
+
   return new vil_tiff_image(tsptr, h);
 }
 
@@ -779,6 +789,7 @@ vil_tiff_image::get_block( unsigned block_index_i,
     return this->fill_block_from_strip(buf);
   }
 
+  delete [] data;
   return view;
 }
 
