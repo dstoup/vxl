@@ -35,7 +35,10 @@ vil_image_view_base_sptr vil_transpose_image_resource::get_copy_view(unsigned i0
   {
 #define macro( F, T ) \
   case F : \
-    return new vil_image_view<T > (vil_transpose(static_cast<const vil_image_view<T >&>(*vs)));
+  { \
+      vil_image_view_base_sptr nvs = new vil_image_view<T> (vil_transpose(static_cast<const vil_image_view<T>&>(*vs))); \
+    return nvs; \
+  }
 
     macro(VIL_PIXEL_FORMAT_BYTE, vxl_byte)
     macro(VIL_PIXEL_FORMAT_SBYTE, vxl_sbyte)
@@ -67,7 +70,10 @@ vil_image_view_base_sptr vil_transpose_image_resource::get_view(unsigned i0, uns
   {
 #define macro( F, T ) \
   case F : \
-    return new vil_image_view<T > (vil_transpose(static_cast<const vil_image_view<T >&>(*vs)));
+  { \
+      vil_image_view_base_sptr nvs = new vil_image_view<T > (vil_transpose(static_cast<const vil_image_view<T >&>(*vs))); \
+      return nvs; \
+  }
 
     macro(VIL_PIXEL_FORMAT_BYTE, vxl_byte)
     macro(VIL_PIXEL_FORMAT_SBYTE, vxl_sbyte)
