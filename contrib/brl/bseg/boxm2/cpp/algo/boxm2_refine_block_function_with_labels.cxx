@@ -139,33 +139,33 @@ bool boxm2_refine_block_function_with_labels<T>::refine_deterministic(std::vecto
   boxm2_block_id id = datas[0]->block_id();
   char* buf = new char[dataSize * app_type_size_];
   std::cout << "data size is "<<app_type_size_<<" , "<<sizeof(T)<<" and id is "<<app_type_<<std::endl;
-  boxm2_data_base* newA = new boxm2_data_base(new char[dataSize * sizeof(float) ], dataSize * sizeof(float), id);
-  boxm2_data_base* newM = new boxm2_data_base(new char[dataSize * app_type_size_], dataSize * app_type_size_, id);
-  boxm2_data_base* newF = VXL_NULLPTR;
-  boxm2_data_base* newF_res = VXL_NULLPTR;
-  boxm2_data_base* newA_sav = VXL_NULLPTR;
-  boxm2_data_base* newM_sav = VXL_NULLPTR;
+  boxm2_data_base_sptr newA = new boxm2_data_base(new char[dataSize * sizeof(float) ], dataSize * sizeof(float), id);
+  boxm2_data_base_sptr newM = new boxm2_data_base(new char[dataSize * app_type_size_], dataSize * app_type_size_, id);
+  boxm2_data_base_sptr newF = VXL_NULLPTR;
+  boxm2_data_base_sptr newF_res = VXL_NULLPTR;
+  boxm2_data_base_sptr newA_sav = VXL_NULLPTR;
+  boxm2_data_base_sptr newM_sav = VXL_NULLPTR;
   T fills;
   fills.fill(0);
 
 
-    if (flow_)
-          newF = new boxm2_data_base(new char[dataSize * sizeof(float4)], dataSize * sizeof(float4), id);
+  if (flow_)
+    newF = new boxm2_data_base(new char[dataSize * sizeof(float4)], dataSize * sizeof(float4), id);
   if (flow_res_)
-          newF_res = new boxm2_data_base(new char[dataSize * sizeof(float4)], dataSize * sizeof(float4), id);
+    newF_res = new boxm2_data_base(new char[dataSize * sizeof(float4)], dataSize * sizeof(float4), id);
   if (alpha_sav_)
-          newA_sav =  new boxm2_data_base(new char[dataSize * sizeof(float) ], dataSize * sizeof(float), id);
-  if(mog_sav_)
-          newM_sav  = new boxm2_data_base(new char[dataSize * app_type_size_] , dataSize * app_type_size_, id);
+    newA_sav =  new boxm2_data_base(new char[dataSize * sizeof(float) ], dataSize * sizeof(float), id);
+  if (mog_sav_)
+    newM_sav  = new boxm2_data_base(new char[dataSize * app_type_size_] , dataSize * app_type_size_, id);
 
   if(flow_res_){
 
-          std::cout<<"optical flow will be moved"<<std::endl;
+    std::cout<<"optical flow will be moved"<<std::endl;
   }
 
   if(alpha_sav_ && mog_sav_){
 
-          std::cout<<"saved buffers will be moved"<<std::endl;
+    std::cout<<"saved buffers will be moved"<<std::endl;
   }
 
   float*   alpha_cpy = (float*) newA->data_buffer();
@@ -175,13 +175,13 @@ bool boxm2_refine_block_function_with_labels<T>::refine_deterministic(std::vecto
   float*   alpha_sav_cpy = VXL_NULLPTR;
   T*  mog_sav_cpy = VXL_NULLPTR;
   if(flow_)
-          flow_cpy =(float4*)newF->data_buffer();
+    flow_cpy =(float4*)newF->data_buffer();
   if(flow_res_)
-          flow_res_cpy =(float4*)newF_res->data_buffer();
+    flow_res_cpy =(float4*)newF_res->data_buffer();
   if(alpha_sav_)
-          alpha_sav_cpy = (float*)newA_sav->data_buffer();
+    alpha_sav_cpy = (float*)newA_sav->data_buffer();
   if(mog_sav_)
-          mog_sav_cpy = (T*)newM_sav->data_buffer();
+    mog_sav_cpy = (T*)newM_sav->data_buffer();
 
   //3. loop through tree again, putting the data in the right place
   std::cout<<"Swapping data into new blocks..."<<std::endl;
@@ -225,19 +225,16 @@ bool boxm2_refine_block_function_with_labels<T>::refine_deterministic(std::vecto
   std::cout<<"old and new counts "<<count_original<<" "<<count_new<<" "<<std::endl;
 
   //3. Replace data in the cache
-
-
-
-  cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_ALPHA>::prefix(), newA);
-  cache->replace_data_base(scene,id,  app_type_, newM);
+  cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_ALPHA>::prefix(), newA.ptr());
+  cache->replace_data_base(scene,id,  app_type_, newM.ptr());
   if (flow_)
-          cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_NORMAL>::prefix("lvl"), newF);
+    cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_NORMAL>::prefix("lvl"), newF.ptr());
   if (flow_res_)
-          cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_NORMAL>::prefix(flow_prefix_), newF_res);
+    cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_NORMAL>::prefix(flow_prefix_), newF_res.ptr());
   if(alpha_sav_)
-          cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_ALPHA>::prefix("sav"), newA_sav);
+    cache->replace_data_base(scene,id, boxm2_data_traits<BOXM2_ALPHA>::prefix("sav"), newA_sav.ptr());
   if(mog_sav_)
-          cache->replace_data_base(scene,id, app_type_+"_sav", newM_sav);
+    cache->replace_data_base(scene,id, app_type_+"_sav", newM_sav.ptr());
 
 
   return true;
