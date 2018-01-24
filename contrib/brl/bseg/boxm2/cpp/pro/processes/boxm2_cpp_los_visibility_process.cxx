@@ -101,7 +101,7 @@ bool boxm2_cpp_los_visibility_process(bprb_func_process& pro)
         boxm2_vis_probe_functor vis_probe_functor;
         vis_probe_functor.init_data(datas, &vis);
 
-        boxm2_scene_info_wrapper *scene_info_wrapper=new boxm2_scene_info_wrapper();
+        boxm2_scene_info_wrapper_sptr scene_info_wrapper=new boxm2_scene_info_wrapper();
         scene_info_wrapper->info=scene->get_blk_metadata(*id);
         boxm2_cast_ray_function<boxm2_vis_probe_functor>(ray_01,
                                                          scene_info_wrapper->info,
