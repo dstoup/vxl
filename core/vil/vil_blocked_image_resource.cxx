@@ -209,7 +209,7 @@ bool vil_blocked_image_resource::trim_border_blocks(unsigned int i0, unsigned in
         vil_image_view< T > currBlock = static_cast<vil_image_view< T >&>(*blocks[bi][bj]);\
         vil_image_view< T >* croppedBlock = new vil_image_view< T >();\
         *croppedBlock = vil_crop(currBlock, bi0, bin-bi0+1, bj0, bjn-bj0+1);\
-        blocks[bi][bj] = croppedBlock;\
+        blocks[bi][bj] = vil_image_view_base_sptr(croppedBlock); \
        } break
         TRIM_BORDER_BLOCK_CASE(VIL_PIXEL_FORMAT_BYTE, vxl_byte);
         TRIM_BORDER_BLOCK_CASE(VIL_PIXEL_FORMAT_SBYTE, vxl_sbyte);
