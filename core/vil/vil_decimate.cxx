@@ -120,8 +120,11 @@ vil_image_view_base_sptr vil_decimate(const vil_image_view_base_sptr im, unsigne
   {
 #define macro( F , T ) \
   case F : \
-    return new vil_image_view<T >(vil_decimate(static_cast<vil_image_view<T >&>(*im), \
-                                  i_factor, j_factor));
+  { \
+      vil_image_view_base_sptr base = new vil_image_view<T >(vil_decimate(static_cast<vil_image_view<T >&>(*im), \
+                                                                          i_factor, j_factor)); \
+      return base; \
+  }
 
     macro(VIL_PIXEL_FORMAT_BYTE , vxl_byte )
     macro(VIL_PIXEL_FORMAT_SBYTE , vxl_sbyte )
