@@ -82,8 +82,11 @@ bool vpgl_geo_camera::init_geo_camera(vil_image_resource_sptr const geotiff_img,
   }
   else {
     std::cout << "vpgl_geo_camera::init_geo_camera comp_trans_matrix -- Transform matrix cannot be formed..\n";
+    delete gtif;
     return false;
   }
+
+  delete gtif;
 
   // create the camera
   camera = new vpgl_geo_camera(trans_matrix, lvcs);
@@ -91,7 +94,9 @@ bool vpgl_geo_camera::init_geo_camera(vil_image_resource_sptr const geotiff_img,
 
   // check if the model type is geographic and also the units
   if (gtif->GCS_WGS84_MET_DEG())
+  {
     return true;
+  }
 
   // otherwise check if it is projected to UTM and figure out the zone
   if (gtif->PCS_WGS84_UTM_zone(utm_zone, h) || gtif->PCS_NAD83_UTM_zone(utm_zone, h))
