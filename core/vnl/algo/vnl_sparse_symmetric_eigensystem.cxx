@@ -359,6 +359,11 @@ int vnl_sparse_symmetric_eigensystem::CalculateNPairs(
         case     3:  // No shifts could be applied during a cycle of IRAM iteration
           break;
         default   :  // unknown ARPACK error
+          delete[] resid;
+          delete[] V;
+          delete[] workd;
+          delete[] workl;
+
           return info;
       }
 
